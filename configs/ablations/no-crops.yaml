@@ -1,0 +1,16 @@
+# Ablation of configs/anonymize.yaml: one change (no-crops).
+# Anonymisation of the v2b camera images. Every key of
+# blur_data/anonymize/config.py:AnonConfig may be set here; the values
+# below were chosen in notebooks/01_face_detection.ipynb (see
+# .docs/progress.md, section S2).
+
+# vehicles -> licence plates
+# everything that can carry a plate, attachments included (a bicycle
+# trailer's plate was missed with the plain vehicle concepts)
+vehicle_prompts: [car, van, truck, bus, trailer, tram, motorcycle, moped, scooter,
+                  e-scooter, cargo bike, delivery bike, bicycle trailer,
+                  bike trailer, bike rack, caravan, tractor]
+vehicle_threshold: 0.3
+plate_prompt: license plate
+plate_threshold: 0.3
+plate_crop_min_width: 100000  # ABLATION: no zoomed vehicle crops

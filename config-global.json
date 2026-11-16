@@ -1,0 +1,49 @@
+{
+  "_comment": "Paths of this machine. blur_data/scripts/dm_link.py links them into resources/. A relative local_root is relative to the repository; a relative local_path is relative to local_root, an absolute one is used as-is.",
+  "project": "fm-anonymize",
+  "nas_root": "/path/to/nas",
+  "machines": {
+    "default": {
+      "role": "workstation",
+      "nas_root": "/path/to/nas",
+      "local_root": "."
+    }
+  },
+  "workspaces": {
+    "outputs": "outputs",
+    "resources": "resources"
+  },
+  "datasets": {
+    "v2b": {
+      "local_path": "datasets/own",
+      "note": "your own recordings: a nuScenes-style export (<scene>/v1.0-*/ tables plus sensor_data/); 'v2b' is the reader's name"
+    },
+    "v2b-blurred": {
+      "local_path": "datasets/own-blurred",
+      "note": "a copy of the export above; blur-data-render.py rewrites its camera images"
+    },
+    "pp4av": {
+      "local_path": "datasets/pp4av/data",
+      "note": "huggingface.co/datasets/khaclinh/pp4av (CC BY-NC-ND 4.0): unzip data/images.zip and data/annotations.zip here, one folder per city"
+    }
+  },
+  "checkpoints": {
+    "sam3": {
+      "local_path": "checkpoints/sam3",
+      "note": "huggingface.co/facebook/sam3 (gated): sam3.pt + config.json"
+    },
+    "sam-3d-body": {
+      "local_path": "checkpoints/sam-3d-body",
+      "note": "huggingface.co/facebook/sam-3d-body-dinov3 (gated): model.ckpt, model_config.yaml, assets/mhr_model.pt"
+    },
+    "arcface": {
+      "local_path": "checkpoints/arcface",
+      "note": "only for FM-Anonymize-Gen and its evaluation: InsightFace buffalo_l (det_10g.onnx, w600k_r50.onnx), non-commercial research only"
+    }
+  },
+  "methods": {},
+  "smoke": {
+    "dataset": "pp4av",
+    "expect_files": []
+  }
+}

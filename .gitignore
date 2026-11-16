@@ -1,0 +1,29 @@
+# UV / Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Type checker / lint caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Machine-dependent (built by blur_data/scripts/dm_link.py)
+/resources/
+/outputs/
+/checkpoints/
+/datasets/
+
+
+# Baselines installed by hand (see README)
+/third_party/egoblur/
+/third_party/urbananonymizer/
+/third_party/autoware_rosbag2_anonymizer/

@@ -1,0 +1,74 @@
+# Ablation of configs/anonymize.yaml: one change (no-extra-prompts).
+# Anonymisation of the v2b camera images. Every key of
+# blur_data/anonymize/config.py:AnonConfig may be set here; the values
+# below were chosen in notebooks/01_face_detection.ipynb (see
+# .docs/progress.md, section S2).
+
+# vehicles -> licence plates
+# everything that can carry a plate, attachments included (a bicycle
+# trailer's plate was missed with the plain vehicle concepts)
+vehicle_prompts: [car, van, truck, bus, trailer, tram, motorcycle, moped, scooter,
+                  e-scooter, cargo bike, delivery bike]  # ABLATION: no attachment prompts
+vehicle_threshold: 0.3
+plate_prompt: license plate
+plate_threshold: 0.3
+plate_crop_min_width: 60
+plate_crop_pad: 0.1
+plate_in_vehicle_pad: 0.1
+plate_dilate_frac: 0.25
+plate_dilate_min_px: 3
+plate_fill_box: false
+
+# people -> SAM 3D Body -> head
+person_prompts: [person]
+person_threshold: 0.3
+max_angle_deg: 130.0
+small_person_px: 60
+head_margin: 0.05  # mesh head vertices only (skull, face, jaw)
+head_min_px: 3
+fallback_top_frac: 0.25
+
+# occupants (drivers/passengers) from the zoomed vehicle crops: head only
+occupants: true
+occupant_min_width: 150
+occupant_threshold: 0.3
+occupant_face_threshold: 0.4
+occupant_inside_frac: 0.7
+occupant_crop_pad: 0.0
+
+# windows of close vehicles without a found occupant: a driver behind
+# reflections is recognisable
+# but not detectable (CAMERA_LEFT_FRONT ~frames 116-123)
+window_blur: true
+window_prompts: [car window, windshield]
+window_threshold: 0.3
+window_min_height_px: 250
+window_dilate_frac: 0.03
+
+# the ego car's side mirrors (found as a recurring "occupant" in
+# anonymize-001: LEFT_FRONT 199/201 frames, RIGHT_FRONT 141/201)
+ego_vehicle_zones:
+  CAMERA_LEFT_FRONT: [[1740, 960, 2200, 1200]]
+  CAMERA_RIGHT_FRONT: [[0, 960, 460, 1200]]
+
+# size policy (precision setting): faces estimated below 8x8 px are not
+# blurred; every face is scored (2026-11-06: 8 px keeps recall at 97 % on
+# all faces, 16 px only 87 %). 0 blurs every face (ablations/no-rule.yaml).
+min_face_px: 8.0
+# every face region scaled about its centre last (PP4AV: 1.36 = 1/0.735)
+face_region_scale: 1.0
+face_width_m: 0.16
+face_per_person_height: 0.13
+
+# SAM3 "face" safety net
+face_safety_net: true
+face_prompt: face
+face_threshold: 0.4
+face_dilate_frac: 0.25
+face_covered_frac: 0.8
+
+tiles: true
+dedupe_iou: 0.5
+blur_scale: 0.3
+plate_fill: white  # white | blur
+jpeg_quality: keep

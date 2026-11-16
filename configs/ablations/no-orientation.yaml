@@ -1,0 +1,26 @@
+# Ablation of configs/anonymize.yaml: one change (no-orientation).
+# Anonymisation of the v2b camera images. Every key of
+# blur_data/anonymize/config.py:AnonConfig may be set here; the values
+# below were chosen in notebooks/01_face_detection.ipynb (see
+# .docs/progress.md, section S2).
+
+# vehicles -> licence plates
+# everything that can carry a plate, attachments included (a bicycle
+# trailer's plate was missed with the plain vehicle concepts)
+vehicle_prompts: [car, van, truck, bus, trailer, tram, motorcycle, moped, scooter,
+                  e-scooter, cargo bike, delivery bike, bicycle trailer,
+                  bike trailer, bike rack, caravan, tractor]
+vehicle_threshold: 0.3
+plate_prompt: license plate
+plate_threshold: 0.3
+plate_crop_min_width: 60
+plate_crop_pad: 0.1
+plate_in_vehicle_pad: 0.1
+plate_dilate_frac: 0.25
+plate_dilate_min_px: 3
+plate_fill_box: false
+
+# people -> SAM 3D Body -> head
+person_prompts: [person]
+person_threshold: 0.3
+max_angle_deg: 181.0  # ABLATION: no facing test, every head is blurred

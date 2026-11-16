@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}FM-Anonymize setup{% endblock %}
+{% block head %}
+<style>
+table { border-collapse: collapse; width: 100%; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+td { padding: 10px 12px; border-top: 1px solid var(--line);
+  vertical-align: top; }
+tr:first-child td { border-top: 0; }
+td.st { width: 80px; font-weight: 600; white-space: nowrap; }
+td.st.ok { color: var(--ok); } td.st.no { color: var(--bad); }
+td pre { margin: 6px 0 0; }
+h2 { font-size: 17px; margin: 30px 0 8px; }
+</style>
+{% endblock %}
+{% block main %}
+<p class="lead">
+  Training-free anonymization of driving data with SAM&nbsp;3 and
+  SAM&nbsp;3D Body. A run needs one GPU (24&nbsp;GB, CUDA&nbsp;12.6), the two
+  model submodules, the Python environment and the gated SAM&nbsp;3 and
+  SAM&nbsp;3D Body checkpoints (request access on Hugging Face, then
+  <code>uv run hf auth login</code>). This page checks each step for
+  this checkout; reload it after a step. Full details are in the
+  README.
+</p>
+<table>
+  {% for c in checks %}
+  <tr>
+    <td class="st {{ 'ok' if c.ok else 'no' }}">{{ 'ready' if c.ok else 'missing' }}</td>
+    <td>{{ c.name }}{% if not c.ok %}<pre>{{ c.fix }}</pre>{% endif %}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>Anonymize PP4AV and score it (paper, Table I)</h2>
+<pre>uv run python blur_data/scripts/blur-data-anonymize.py \
+    --config configs/anonymize.yaml --dataset pp4av --run pp4av-ours
+# PP4AV boxes enclose the whole head: grow the face regions by 1/0.735
+uv run python blur_data/scripts/blur-data-derive-run.py \
+    --src pp4av-ours --dst pp4av-ours-grow --grow-faces 1.3605
+uv run python blur_data/scripts/blur-data-paper-eval.py \
+    --gt pp4av --runs ours=pp4av-ours-grow --out outputs/eval/pp4av.json</pre>
+
+<h2>Anonymize a folder of your own images</h2>
+<pre>uv run python -m blur_data.web        # http://127.0.0.1:5010</pre>
+<p class="note">The full app picks an image folder, runs the pipeline
+with live progress and lets you review every region of the result
+(before | after viewer, statistics, side-by-side comparison of runs).
+</p>
+
+<h2>Generated faces instead of blur (FM-Anonymize-Gen)</h2>
+<pre>uv sync --group inpaint
+uv run python blur_data/scripts/blur-data-generate.py \
+    --regions-run pp4av-ours --dataset pp4av --run gen-pp4av \
+    --config configs/generate-pp4av.yaml --track-scale 2.0</pre>
+{% endblock %}

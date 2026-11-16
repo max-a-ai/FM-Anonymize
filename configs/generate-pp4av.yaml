@@ -1,0 +1,64 @@
+# FM-Anonymize-Gen on PP4AV: configs/generate.yaml with head tracks.
+# PP4AV holds single frames of 5-frame steps, without the person tracks
+# of our recordings; heads are linked on their own regions (run with
+# --track-scale 2.0, boxes grown 2x as a search region).
+
+# diffusion model: SD 1.5 inpainting (CreativeML OpenRAIL-M), fp16,
+# pinned. A neutral prompt + negative prompt beat no prompt on 30 PP4AV
+# images: without one, SD 1.5 often paints textures or objects into the
+# head; SDXL inpainting 0.1 left bright halos and was 5x slower.
+model: stable-diffusion-v1-5/stable-diffusion-inpainting
+revision: 8a4288a76071f7280aedbdb3253bdb9e9d5d84bb
+resolution: 512
+steps: 30
+scheduler: dpmpp
+guidance_scale: 5.0
+prompt: "a photo of a person, realistic"
+negative_prompt: >-
+  cartoon, painting, drawing, illustration, deformed, distorted, disfigured, bad anatomy, extra eyes, mask, text, watermark, lowres
+
+# routing: heads and occupants are generated; box-top fallbacks, plates,
+# windows, the SAM 3 face net (its false positives on clocks and posters
+# would be filled with people) and regions outside the size gates keep
+# FM-Anonymize's blur. Regions whose box long side exceeds
+# max_generate_frac x the image's short side are blurred (an outlier
+# mask would regenerate most of the frame).
+generate_kinds: [head, occupant]
+min_generate_px: 24
+max_generate_frac: 0.25
+
+# SDEdit from FM-Anonymize's blur: light, colour and the hair outline
+# survive the blur, the identity detail does not. 0.8 is where the
+# re-identification TAR reaches the blur's (strength curve 0.5-1.0 on
+# the PP4AV subset and our annotated frames).
+strength: 0.8
+blur_scale: 0.3
+
+# pose guide (OpenRAIL / Apache-2.0, pinned): template-head depth and the
+# person's own OpenPose keypoints
+controlnet_depth: lllyasviel/control_v11f1p_sd15_depth@539f99181d33db39cf1af2e517cd8056785f0a87
+controlnet_pose: lllyasviel/control_v11p_sd15_openpose@9ae9f970358db89e211b87c915f9535c6686d5ba
+depth_scale: 0.35
+pose_scale: 0.6
+
+# identity: IP-Adapter-FaceID plus-v2 (non-commercial research licence)
+# on the ArcFace embedding of a synthetic reference face per track
+faceid_adapter: h94/IP-Adapter-FaceID@43907e6f44d079bf1a9102d9a6e56aef7a219bae
+faceid_weight: ip-adapter-faceid-plusv2_sd15.bin
+image_encoder: h94/IP-Adapter@018e402774aeeddd60609b4ecdb7e298259dc729
+identity_scale: 0.7
+reference_prompt: "a color photo, close-up portrait of a person, face centered, looking at the camera, neutral expression, realistic"
+reference_steps: 25
+
+# one identity per head track: heads linked on their own regions
+link_on: head
+track_iou: 0.3
+
+# crop geometry (as LDFA: square crop with context, upscaled to 512)
+context: 2.5
+min_context: 1.25
+dilate_frac: 0.1
+dilate_min_px: 2
+
+# composite: Laplacian blend band, then blur / noise / JPEG matching
+blend_levels: 3
